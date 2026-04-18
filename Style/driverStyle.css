@@ -1,0 +1,87 @@
+html, body{
+     margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: whitesmoke;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    overflow: auto;
+    padding-top: 0px;  
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    width: 100%;
+}
+
+.team-row {
+    width: 100%;
+    max-width: 900px; /* Limits how far apart the drivers get */
+    margin-bottom: 60px; /* Space between Red Bull and Ferrari */
+    text-align: center;
+}
+
+.team-row h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.driver-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Exactly two equal columns */
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+}
+
+.driver-grid li {
+    color: black;
+    padding: 30px;
+    font-weight: bold;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.links{
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    background-color: grey;
+    color: white;
+    flex-wrap: wrap;
+
+
+}
+
+.links a{
+    display: inline-block;
+    margin: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    background-color: #e10600;
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    color: white;
+}
+
+.title{
+    text-align: center;
+    padding: 10px;  
+}
+
+.drivertopbutton{
+    text-align: center;
+    background-color: #e10600;
+    padding: 15px;  
+    margin: 20px 500px;
+}
+
+.drivertopbutton a{
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+}

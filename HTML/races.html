@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 Obstacle Race</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #111; }
+  canvas { display: block; background: #222; }
+  #nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #000;
+    padding: 10px;
+    text-align: center;
+    z-index: 10;
+  }
+  #nav a {
+    color: white;
+    margin: 0 20px;
+    text-decoration: none;
+    font-family: Arial;
+  }
+  #restartBtn, #startBtn {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  #restartBtn { top: 60%; display: none; }
+  #startBtn { top: 50%; }
+</style>
+</head>
+<body>
+
+<div id="nav">
+  <a href="../index.html">Home</a>
+  <a href="teams.html">Teams</a>
+  <a href="drivers.html">Drivers</a>
+
+</div>
+
+<button id="startBtn">Start</button>
+<button id="restartBtn">Restart</button>
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let car, obstacles, keys, gameOver, win;
+let startTime, finishSpawned, finishLine;
+let gameStarted = false;
+
+function init() {
+  car = { x: 100, y: canvas.height/2, w: 50, h: 25, speed: 6 };
+  obstacles = [];
+  keys = {};
+  gameOver = false;
+  win = false;
+  startTime = null;
+  finishSpawned = false;
+  finishLine = null;
+  document.getElementById("restartBtn").style.display = "none";
+}
+
+init();
+
+// Controls
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+function spawnObstacle() {
+  if (!gameStarted || gameOver) return;
+  let size = 20 + Math.random()*50;
+  obstacles.push({
+    x: canvas.width,
+    y: Math.random() * (canvas.height - size),
+    w: size,
+    h: size,
+    speed: 6 + Math.random()*4
+  });
+}
+
+setInterval(spawnObstacle, 400);
+
+function spawnFinishLine() {
+  finishLine = {
+    x: canvas.width,
+    w: 20,
+    speed: 6
+  };
+  finishSpawned = true;
+}
+
+function update() {
+  if (!gameStarted || gameOver) return;
+
+  let elapsed = Date.now() - startTime;
+
+  if (!finishSpawned && elapsed >= 20000) {
+    spawnFinishLine();
+  }
+
+  if (keys["ArrowUp"]) car.y -= car.speed;
+  if (keys["ArrowDown"]) car.y += car.speed;
+
+  car.y = Math.max(0, Math.min(canvas.height - car.h, car.y));
+
+  obstacles.forEach(o => o.x -= o.speed);
+  obstacles = obstacles.filter(o => o.x + o.w > 0);
+
+  obstacles.forEach(o => {
+    if (car.x < o.x + o.w &&
+        car.x + car.w > o.x &&
+        car.y < o.y + o.h &&
+        car.y + car.h > o.y) {
+      gameOver = true;
+      document.getElementById("restartBtn").style.display = "block";
+    }
+  });
+
+  if (finishSpawned && finishLine) {
+    finishLine.x -= finishLine.speed;
+
+    if (car.x < finishLine.x + finishLine.w &&
+        car.x + car.w > finishLine.x) {
+      gameOver = true;
+      win = true;
+      document.getElementById("restartBtn").style.display = "block";
+    }
+  }
+}
+
+function drawCar() {
+  ctx.fillStyle = "red";
+  ctx.fillRect(car.x, car.y, car.w, car.h);
+  ctx.fillStyle = "white";
+  ctx.fillRect(car.x + 40, car.y + 5, 10, 15);
+}
+
+function drawObstacles() {
+  ctx.fillStyle = "yellow";
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+}
+
+function drawFinishLine() {
+  if (!finishSpawned || !finishLine) return;
+  ctx.fillStyle = "white";
+  for (let i = 0; i < canvas.height; i += 40) {
+    ctx.fillRect(finishLine.x, i, finishLine.w, 20);
+  }
+}
+
+function drawUI() {
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+
+  if (!gameStarted) {
+    ctx.fillText("Press Start to begin", 20, 60);
+    return;
+  }
+
+  let remaining = Math.max(0, 20 - Math.floor((Date.now() - startTime)/1000));
+  if (!finishSpawned) {
+    ctx.fillText("Survive: " + remaining + "s", 20, 60);
+  } else {
+    ctx.fillText("Finish line incoming!", 20, 60);
+  }
+
+  if (gameOver) {
+    ctx.font = "50px Arial";
+    ctx.fillStyle = win ? "lime" : "red";
+    ctx.fillText(win ? "FINISH!" : "CRASH!", canvas.width/2 - 120, canvas.height/2 - 80);
+  }
+}
+
+function loop() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  update();
+  drawFinishLine();
+  drawCar();
+  drawObstacles();
+  drawUI();
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+// Start button
+document.getElementById("startBtn").onclick = () => {
+  gameStarted = true;
+  startTime = Date.now();
+  document.getElementById("startBtn").style.display = "none";
+};
+
+// Restart button
+document.getElementById("restartBtn").onclick = () => {
+  init();
+  gameStarted = false;
+  document.getElementById("startBtn").style.display = "block";
+};
+</script>
+</body>
+</html>
